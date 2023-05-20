@@ -20,13 +20,21 @@ namespace Menu.Services.Order
 
         public async Task<IEnumerable<OrderDto>> GetAllOrders()
         {
-            var orders = await _context.Orders.ToListAsync();
+            var orders = await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Water)
+                .ToListAsync();
+
             return _mapper.Map<IEnumerable<OrderDto>>(orders);
         }
 
         public async Task<OrderDto> GetOrderById(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Water)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
             return _mapper.Map<OrderDto>(order);
         }
 
@@ -71,5 +79,6 @@ namespace Menu.Services.Order
         {
             return await _context.Orders.AnyAsync(order => order.Id == id);
         }
+
     }
 }

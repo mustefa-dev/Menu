@@ -1,4 +1,5 @@
-using Auth.Models;
+using Menu.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Data{
     public class DataContext : DbContext{
@@ -7,5 +8,7 @@ namespace Auth.Data{
 
 
         public DbSet<User> User => Set<User>();
+        public DbSet<Item> Items => Set<Item>();
+        public DbSet<Order> Orders => Set<Order>();
     }
 }

@@ -1,4 +1,4 @@
-namespace Auth.Dtos.User;
+namespace Menu.Dtos.User;
 
 public class UserLoginDto{
     

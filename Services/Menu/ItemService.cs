@@ -6,69 +6,70 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Menu.Services.Menu
 {
-    public class MenuService : IMenuService
+    public class ItemService : IItemService
     {
         private readonly IMapper _mapper;
         private readonly DataContext _context;
 
-        public MenuService(IMapper mapper, DataContext context)
+        public ItemService(IMapper mapper, DataContext context)
         {
             _mapper = mapper;
             _context = context;
         }
 
-        public async Task<IEnumerable<MenuItemDto>> GetAllMenuItems()
+        public async Task<IEnumerable<ItemDto>> GetAllItems()
         {
-            var menuItems = await _context.MenuItems.ToListAsync();
-            return _mapper.Map<IEnumerable<MenuItemDto>>(menuItems);
+            var items = await _context.Items.ToListAsync();
+            return _mapper.Map<IEnumerable<ItemDto>>(items);
         }
 
-        public async Task<MenuItemDto> GetMenuItemById(int id)
+        public async Task<ItemDto> GetItemById(int id)
         {
-            var menuItem = await _context.MenuItems.FindAsync(id);
-            return _mapper.Map<MenuItemDto>(menuItem);
+            var item = await _context.Items.FindAsync(id);
+            return _mapper.Map<ItemDto>(item);
         }
 
-        public async Task<string> CreateMenuItem(MenuItemDto menuItemDto)
+        public async Task<string> CreateItem(ItemDto itemDto)
         {
-            if (await MenuItemExists(menuItemDto.Id))
+            if (await ItemExists(itemDto.Id))
             {
-                return "Menu item with the same ID already exists.";
+                return "Item with the same ID already exists.";
             }
 
-            var menuItem = _mapper.Map<MenuItem>(menuItemDto);
-            await _context.MenuItems.AddAsync(menuItem);
+            var item = _mapper.Map<Item>(itemDto);
+            await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
-            return "Menu item created successfully.";
+            return "Item created successfully.";
         }
 
-        public async Task UpdateMenuItem(MenuItemDto menuItemDto)
+        public async Task UpdateItem(ItemDto itemDto)
         {
-            var menuItem = await _context.MenuItems.FindAsync(menuItemDto.Id);
-            if (menuItem == null)
+            var item = await _context.Items.FindAsync(itemDto.Id);
+            if (item == null)
             {
-                throw new Exception("Menu item not found.");
+                throw new Exception("Item not found.");
             }
 
-            _mapper.Map(menuItemDto, menuItem);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteMenuItem(int id)
-        {
-            var menuItem = await _context.MenuItems.FindAsync(id);
-            if (menuItem == null)
-            {
-                throw new Exception("Menu item not found.");
-            }
-
-            _context.MenuItems.Remove(menuItem);
+            _mapper.Map(itemDto, item);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> MenuItemExists(int id)
+        public async Task DeleteItem(int id)
         {
-            return await _context.MenuItems.AnyAsync(item => item.Id == id);
+            var item = await _context.Items.FindAsync(id);
+            if (item == null)
+            {
+                throw new Exception("Item not found.");
+            }
+
+            _context.Items.Remove(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ItemExists(int id)
+        {
+            return await _context.Items.AnyAsync(item => item.Id == id);
         }
     }
+
 }

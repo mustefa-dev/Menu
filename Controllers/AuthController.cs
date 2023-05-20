@@ -1,6 +1,6 @@
 using Auth.Data;
 using Auth.Dtos.User;
-using Auth.Models;
+using Menu.Dtos.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

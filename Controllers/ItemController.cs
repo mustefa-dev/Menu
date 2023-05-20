@@ -4,9 +4,12 @@ using Menu.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Menu.Services.Menu;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Menu.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/items")]
     public class ItemController : ControllerBase
@@ -17,7 +20,7 @@ namespace Menu.Controllers
         {
             _itemService = itemService;
         }
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ItemDto>>> GetAllItems()
         {
@@ -65,4 +68,6 @@ namespace Menu.Controllers
             return NoContent();
         }
     }
+
+
 }

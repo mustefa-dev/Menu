@@ -1,5 +1,5 @@
 using Auth.Dtos.User;
-using Auth.Models;
+using Menu.Dtos.User;
 
 namespace Auth.Data;
 
