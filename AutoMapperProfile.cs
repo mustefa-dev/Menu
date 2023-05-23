@@ -1,5 +1,6 @@
 using AutoMapper;
 using Menu.Dtos;
+using Menu.Dtos.Menu.Dtos;
 using Menu.Models;
 
 namespace Menu

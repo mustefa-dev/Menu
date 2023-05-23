@@ -1,15 +1,15 @@
-// ItemController.cs
 using Menu.Dtos;
 using Menu.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Menu.Dtos.Menu.Dtos;
 using Menu.Services.Menu;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Menu.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/items")]
     public class ItemController : ControllerBase
@@ -20,6 +20,7 @@ namespace Menu.Controllers
         {
             _itemService = itemService;
         }
+
         [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ItemDto>>> GetAllItems()
@@ -39,14 +40,16 @@ namespace Menu.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> CreateItem(ItemDto itemDto)
+        public async Task<ActionResult<string>> CreateItem([FromForm] ItemDto itemDto)
         {
-            var result = await _itemService.CreateItem(itemDto);
+            var photo = itemDto.Photo; // Access the uploaded photo
+
+            var result = await _itemService.CreateItem(itemDto, photo);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateItem(int id, ItemDto itemDto)
+        public async Task<IActionResult> UpdateItem(int id, [FromForm] ItemDto itemDto)
         {
             if (id != itemDto.Id)
                 return BadRequest();
@@ -54,7 +57,9 @@ namespace Menu.Controllers
             if (!await _itemService.ItemExists(id))
                 return NotFound();
 
-            await _itemService.UpdateItem(itemDto);
+            var photo = itemDto.Photo; // Access the uploaded photo
+
+            await _itemService.UpdateItem(itemDto, photo);
             return NoContent();
         }
 
@@ -68,6 +73,4 @@ namespace Menu.Controllers
             return NoContent();
         }
     }
-
-
 }
