@@ -1,14 +1,17 @@
-namespace Menu.Dtos
+namespace Auth.Dtos.Item
 {
-    namespace Menu.Dtos
+    public class ItemCreateDto
     {
-        public class ItemDto
-        {
-            public int Id { get; set; }
-            public int Price { get; set; }
-            public string? Name { get; set; }
-            public IFormFile? Photo { get; set; } // Add a property for the photo file
-        }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public IFormFile Photo { get; set; }
     }
 
+    public class ItemReadDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public string Photo { get; set; }
+    }
 }

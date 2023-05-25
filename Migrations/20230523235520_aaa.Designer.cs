@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Menu.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230523042749_a")]
-    partial class a
+    [Migration("20230523235520_aaa")]
+    partial class aaa
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,13 +55,15 @@ namespace Menu.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PhotoPath")
+                    b.Property<string>("Photo")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

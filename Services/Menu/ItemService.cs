@@ -1,134 +1,106 @@
 using Auth.Data;
+using Auth.Dtos.Item;
 using AutoMapper;
-using Menu.Dtos;
-using Menu.Models;
+using Item.Data;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Menu.Dtos.Menu.Dtos;
 
 namespace Menu.Services.Menu
 {
-    public class ItemService : IItemService
+    public class ItemRepository : IItemRepository
     {
-        private readonly IMapper _mapper;
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ItemService(IMapper mapper, DataContext context)
+        public ItemRepository(DataContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
-            _mapper = mapper;
             _context = context;
+            _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task<IEnumerable<ItemDto>> GetAllItems()
+        public async Task<ItemReadDto> AddItem(ItemCreateDto itemDto)
         {
-            var items = await _context.Items.ToListAsync();
-            return _mapper.Map<IEnumerable<ItemDto>>(items);
-        }
+            var item = _mapper.Map<global::Menu.Models.Item>(itemDto);
 
-        public async Task<ItemDto> GetItemById(int id)
-        {
-            var item = await _context.Items.FindAsync(id);
-            return _mapper.Map<ItemDto>(item);
-        }
-
-        public async Task<string> CreateItem(ItemDto itemDto, IFormFile photo)
-        {
-            if (await ItemExists(itemDto.Id))
+            if (itemDto.Photo != null)
             {
-                return "Item with the same ID already exists.";
+                item.Photo = await SavePhoto(itemDto.Photo);
             }
-
-            var item = _mapper.Map<Item>(itemDto);
-
-            // Generate a unique file name
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(photo.FileName);
-
-            // Set the file path
-            var filePath = Path.Combine("/home/mu/Pictures/", fileName);
-
-            // Get the absolute path to the file
-            var absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath);
-
-            // Save the file to the specified path
-            using (var stream = new FileStream(absoluteFilePath, FileMode.Create))
-            {
-                await photo.CopyToAsync(stream);
-            }
-
-            // Set the PhotoPath property of the item
-            item.PhotoPath = filePath;
 
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
 
-            return "Item created successfully.";
+            return _mapper.Map<ItemReadDto>(item);
+        }
+    
+
+
+        public async Task<IEnumerable<ItemReadDto>> GetItems()
+        {
+            var items = await _context.Items.ToListAsync();
+            return _mapper.Map<IEnumerable<ItemReadDto>>(items);
         }
 
-        public async Task UpdateItem(ItemDto itemDto, IFormFile photo)
+        public async Task<ItemReadDto> GetItem(int id)
         {
-            var item = await _context.Items.FindAsync(itemDto.Id);
+            var item = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
+            return _mapper.Map<ItemReadDto>(item);
+        }
+
+        public async Task<bool> UpdateItem(int id, ItemUpdateDto itemDto)
+        {
+            var item = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
+
             if (item == null)
-            {
-                throw new Exception("Item not found.");
-            }
+                return false;
 
             _mapper.Map(itemDto, item);
 
-            if (photo != null && photo.Length > 0)
+            if (itemDto.Photo != null)
             {
-                // Process and save the new photo
-                var photoPath = await SavePhoto(photo);
-                item.PhotoPath = photoPath;
+                item.Photo = await SavePhoto(itemDto.Photo);
             }
 
             await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task DeleteItem(int id)
+        public async Task<bool> DeleteItem(int id)
         {
-            var item = await _context.Items.FindAsync(id);
-            if (item == null)
-            {
-                throw new Exception("Item not found.");
-            }
+            var item = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
 
-            // Delete the associated photo, if exists
-            DeletePhoto(item.PhotoPath);
+            if (item == null)
+                return false;
 
             _context.Items.Remove(item);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<bool> ItemExists(int id)
-        {
-            return await _context.Items.AnyAsync(item => item.Id == id);
+            return true;
         }
 
         private async Task<string> SavePhoto(IFormFile photo)
         {
-            // Generate a unique filename for the photo
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(photo.FileName);
-            var filePath = Path.Combine("photo-uploads", fileName);
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
 
-            // Save the photo to the specified path
+            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await photo.CopyToAsync(fileStream);
             }
 
-            return filePath;
-        }
-
-        private void DeletePhoto(string photoPath)
-        {
-            if (!string.IsNullOrEmpty(photoPath))
-            {
-                // Delete the photo file from the file system
-                File.Delete(photoPath);
-            }
+            return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Auth.Data{
 
 
         public DbSet<User> User => Set<User>();
-        public DbSet<Item> Items => Set<Item>();
+        public DbSet<Menu.Models.Item> Items => Set<Menu.Models.Item>();
         public DbSet<Order> Orders => Set<Order>();
     }
 }

@@ -1,76 +1,105 @@
-using Menu.Dtos;
-using Menu.Services;
-using Microsoft.AspNetCore.Authorization;
+using Auth.Dtos.Item;
+using Item.Data;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Menu.Dtos.Menu.Dtos;
-using Menu.Services.Menu;
 
-namespace Menu.Controllers
+namespace Item.Controllers
 {
     [ApiController]
     [Route("api/items")]
-    public class ItemController : ControllerBase
+    public class ItemsController : ControllerBase
     {
-        private readonly IItemService _itemService;
+        private readonly IItemRepository _repository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ItemController(IItemService itemService)
+        public ItemsController(IItemRepository repository, IWebHostEnvironment webHostEnvironment)
         {
-            _itemService = itemService;
+            _repository = repository;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ItemDto>>> GetAllItems()
+        [HttpPost]
+        public async Task<IActionResult> AddItem([FromForm] ItemCreateDto itemDto)
         {
-            var items = await _itemService.GetAllItems();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var createdItem = await _repository.AddItem(itemDto);
+
+            return CreatedAtRoute(nameof(GetItem), new { id = createdItem.Id }, createdItem);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetItems()
+        {
+            var items = await _repository.GetItems();
             return Ok(items);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ItemDto>> GetItemById(int id)
+        [HttpGet("{id}", Name = nameof(GetItem))]
+        public async Task<IActionResult> GetItem(int id)
         {
-            var item = await _itemService.GetItemById(id);
+            var item = await _repository.GetItem(id);
+
             if (item == null)
+            {
                 return NotFound();
+            }
 
             return Ok(item);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<string>> CreateItem([FromForm] ItemDto itemDto)
-        {
-            var photo = itemDto.Photo; // Access the uploaded photo
-
-            var result = await _itemService.CreateItem(itemDto, photo);
-            return Ok(result);
-        }
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateItem(int id, [FromForm] ItemDto itemDto)
+        public async Task<IActionResult> UpdateItem(int id, [FromForm] ItemUpdateDto itemDto)
         {
-            if (id != itemDto.Id)
-                return BadRequest();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            if (!await _itemService.ItemExists(id))
+            var result = await _repository.UpdateItem(id, itemDto);
+
+            if (!result)
+            {
                 return NotFound();
+            }
 
-            var photo = itemDto.Photo; // Access the uploaded photo
-
-            await _itemService.UpdateItem(itemDto, photo);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteItem(int id)
         {
-            if (!await _itemService.ItemExists(id))
-                return NotFound();
+            var result = await _repository.DeleteItem(id);
 
-            await _itemService.DeleteItem(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+
             return NoContent();
+        }
+
+        private async Task<string> SavePhoto(IFormFile photo)
+        {
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await photo.CopyToAsync(fileStream);
+            }
+
+            return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

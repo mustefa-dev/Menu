@@ -1,23 +1,20 @@
+using Auth.Dtos.Item;
 using AutoMapper;
-using Menu.Dtos;
-using Menu.Dtos.Menu.Dtos;
 using Menu.Models;
 
 namespace Menu
 {
-    public class AutoMapperProfile : Profile
+    public class MappingProfile : Profile
     {
-        public AutoMapperProfile()
+        public MappingProfile()
         {
-            CreateMap<Order, OrderDto>()
-                .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Customer))
-                .ForMember(dest => dest.Water, opt => opt.MapFrom(src => src.Water))
-                .ReverseMap();
+            CreateMap<ItemCreateDto, Models.Item>()
+                .ForMember(dest => dest.Photo, opt => opt.Ignore());
 
-            CreateMap<Customer, CustomerDto>().ReverseMap();
-            CreateMap<Water, WaterDto>().ReverseMap();
-            CreateMap<Item, ItemDto>().ReverseMap();
-            // Add mappings for other classes if needed
+            CreateMap<ItemUpdateDto, Models.Item>()
+                .ForMember(dest => dest.Photo, opt => opt.Ignore());
+            
+            CreateMap<Models.Item, ItemReadDto>();
         }
     }
 }

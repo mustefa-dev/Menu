@@ -4,7 +4,7 @@ using Menu.Dtos.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Auth.Controllers;
+namespace Menu.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase{

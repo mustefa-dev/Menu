@@ -1,17 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Menu.Dtos;
-using Menu.Dtos.Menu.Dtos;
+using Auth.Dtos.Item;
 
-namespace Menu.Services.Menu
+namespace Item.Data
 {
-    public interface IItemService
+    public interface IItemRepository
     {
-        Task<IEnumerable<ItemDto>> GetAllItems();
-        Task<ItemDto> GetItemById(int id);
-        Task<string> CreateItem(ItemDto itemDto, IFormFile photo);
-        Task UpdateItem(ItemDto itemDto, IFormFile photo);
-        Task DeleteItem(int id);
-        Task<bool> ItemExists(int id);
+        Task<ItemReadDto> AddItem(ItemCreateDto itemDto);
+        Task<IEnumerable<ItemReadDto>> GetItems();
+        Task<ItemReadDto> GetItem(int id);
+        Task<bool> UpdateItem(int id, ItemUpdateDto itemDto);
+        Task<bool> DeleteItem(int id);
     }
 }
