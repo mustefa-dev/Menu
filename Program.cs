@@ -5,8 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using Menu.Services;
 using Auth.Data;
 using Item.Data;
+using Menu.Data;
+using Menu.Services.Category;
 using Menu.Services.Menu;
-using Menu.Services.Order;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,7 +53,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 // Register repositories and services
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // Configure authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -1,5 +1,4 @@
 using Auth.Data;
-using Auth.Dtos.Item;
 using AutoMapper;
 using Item.Data;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Menu.Data;
+using Menu.Dtos;
+using Menu.Dtos.Category;
 
 namespace Menu.Services.Menu
 {
@@ -34,34 +36,53 @@ namespace Menu.Services.Menu
                 item.Photo = await SavePhoto(itemDto.Photo);
             }
 
+            // Load the associated category
+            var category = await _context.Categories.FindAsync(itemDto.CategoryId);
+            item.Category = category;
+
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ItemReadDto>(item);
+            // Map the item and included category to the ItemReadDto response
+            var itemWithCategoryDto = _mapper.Map<ItemReadDto>(item);
+            itemWithCategoryDto.Category = _mapper.Map<CategoryReadDto>(category);
+
+            return itemWithCategoryDto;
         }
+
     
 
 
         public async Task<IEnumerable<ItemReadDto>> GetItems()
         {
-            var items = await _context.Items.ToListAsync();
+            var items = await _context.Items.Include(x => x.Category).ToListAsync();
             return _mapper.Map<IEnumerable<ItemReadDto>>(items);
         }
 
         public async Task<ItemReadDto> GetItem(int id)
         {
-            var item = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
+            var item = await _context.Items.Include(x => x.Category).FirstOrDefaultAsync(x => x.Id == id);
             return _mapper.Map<ItemReadDto>(item);
         }
 
+
         public async Task<bool> UpdateItem(int id, ItemUpdateDto itemDto)
         {
-            var item = await _context.Items.FirstOrDefaultAsync(x => x.Id == id);
+            var item = await _context.Items.Include(x => x.Category).FirstOrDefaultAsync(x => x.Id == id);
 
             if (item == null)
                 return false;
 
             _mapper.Map(itemDto, item);
+
+            if (itemDto.CategoryId != item.Category.Id)
+            {
+                var category = await _context.Categories.FirstOrDefaultAsync(x => x.Id == itemDto.CategoryId);
+                if (category == null)
+                    return false;
+
+                item.Category = category;
+            }
 
             if (itemDto.Photo != null)
             {
@@ -71,6 +92,8 @@ namespace Menu.Services.Menu
             await _context.SaveChangesAsync();
             return true;
         }
+
+
 
         public async Task<bool> DeleteItem(int id)
         {

@@ -6,13 +6,13 @@
       "applicationUrl": "http://localhost:53686",
       "sslPort": 44372
     }
-  },
+  },  
   "profiles": {
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://192.168.1.102:5043",
+        "applicationUrl": "http://192.168.215.101:5043",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -21,7 +21,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7154;http://192.168.1.102:5043",
+      "applicationUrl": "http://192.168.1.102:5043",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
