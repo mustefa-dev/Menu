@@ -27,6 +27,18 @@ namespace Menu.Services.Menu
             _webHostEnvironment = webHostEnvironment;
         }
 
+        public async Task<IEnumerable<ItemReadDto>> GetItemsByCategoryName(string categoryName)
+        {
+            var items = await _context.Items
+                .Include(x => x.Category)
+                .Where(x => x.Category.Name.ToUpper() == categoryName.ToUpper())
+                .ToListAsync();
+    
+            return _mapper.Map<IEnumerable<ItemReadDto>>(items);
+        }
+
+
+
         public async Task<ItemReadDto> AddItem(ItemCreateDto itemDto)
         {
             var item = _mapper.Map<global::Menu.Models.Item>(itemDto);

@@ -19,7 +19,12 @@ namespace Menu.Controllers
             _repository = repository;
             _webHostEnvironment = webHostEnvironment;
         }
-
+        [HttpGet("itemsByCategory/{categoryName}")]
+        public async Task<ActionResult<IEnumerable<ItemReadDto>>> GetItemsByCategory(string categoryName)
+        {
+            var items = await _repository.GetItemsByCategoryName(categoryName);
+            return Ok(items);
+        }
         [HttpPost]
         public async Task<IActionResult> AddItem([FromForm] ItemCreateDto itemDto)
         {
