@@ -7,7 +7,9 @@ using Auth.Data;
 using Item.Data;
 using Menu.Data;
 using Menu.Services.Category;
+using Menu.Services.Drink;
 using Menu.Services.Menu;
+using Menu.Services.Section;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,13 +49,16 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-// Add AutoMapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-// Register repositories and services
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ISectionRepository, SectionRepository>();
+builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
+
+
+
 
 // Configure authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

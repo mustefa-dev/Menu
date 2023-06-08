@@ -10,6 +10,7 @@ namespace Menu.Data{
         public DbSet<User> User => Set<User>();
         public DbSet<Models.Item> Items => Set<Menu.Models.Item>();
         public DbSet<Category> Categories => Set<Category>();
-
+        public DbSet<Section> Sections => Set<Section>();
+        public DbSet<Drink> Drinks => Set<Drink>();
     }
 }
