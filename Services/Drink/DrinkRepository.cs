@@ -1,14 +1,8 @@
 using AutoMapper;
 using Menu.Data;
 using Menu.Dtos.Drink;
-using Menu.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 using Menu.Dtos.Drink.Menu.Dtos.Drink;
 
 namespace Menu.Services.Drink
@@ -26,16 +20,16 @@ namespace Menu.Services.Drink
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task<IEnumerable<DrinkDto>> GetDrinks()
+        public async Task<IEnumerable<DrinkReadDto>> GetDrinks()
         {
             var drinks = await _context.Drinks.Include(d => d.Section).ToListAsync();
-            return _mapper.Map<IEnumerable<DrinkDto>>(drinks);
+            return _mapper.Map<IEnumerable<DrinkReadDto>>(drinks);
         }
 
-        public async Task<DrinkDto> GetDrinkById(int id)
+        public async Task<DrinkReadDto> GetDrinkById(int id)
         {
             var drink = await _context.Drinks.Include(d => d.Section).FirstOrDefaultAsync(d => d.Id == id);
-            return _mapper.Map<DrinkDto>(drink);
+            return _mapper.Map<DrinkReadDto>(drink);
         }
 
         public async Task<(bool success, string message)> AddDrink(DrinkCreateDto drinkDto, IWebHostEnvironment webHostEnvironment)
@@ -46,7 +40,6 @@ namespace Menu.Services.Drink
                 return (false, "Invalid section ID.");
             }
 
-            // Check if drink name already exists
             bool drinkExists = await _context.Drinks.AnyAsync(d => d.Name == drinkDto.Name);
             if (drinkExists)
             {
@@ -109,14 +102,15 @@ namespace Menu.Services.Drink
             return (true, "Drink deleted successfully.");
         }
 
-        public async Task<IEnumerable<DrinkDto>> GetDrinksBySection(string sectionName)
+        [SuppressMessage("ReSharper.DPA", "DPA0009: High execution time of DB command", MessageId = "time: 1067ms")]
+        public async Task<IEnumerable<DrinkReadDto>> GetDrinksBySection(string sectionName)
         {
             var drinks = await _context.Drinks
                 .Include(d => d.Section)
                 .Where(d => d.Section.Name == sectionName)
                 .ToListAsync();
 
-            return _mapper.Map<IEnumerable<DrinkDto>>(drinks);
+            return _mapper.Map<IEnumerable<DrinkReadDto>>(drinks);
         }
 
         private async Task<string> SavePhoto(IFormFile photo, IWebHostEnvironment webHostEnvironment)

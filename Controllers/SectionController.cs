@@ -23,15 +23,15 @@ namespace Menu.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SectionDto>>> GetSections()
+        public async Task<ActionResult<List<SectionReadDto>>> GetSections()
         {
             var sections = await _sectionRepository.GetSections();
-            var sectionDtos = _mapper.Map<List<SectionDto>>(sections);
+            var sectionDtos = _mapper.Map<List<SectionReadDto>>(sections);
             return Ok(sections);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SectionDto>> GetSection(int id)
+        public async Task<ActionResult<SectionReadDto>> GetSection(int id)
         {
             var section = await _sectionRepository.GetSectionById(id);
             if (section == null)
@@ -39,7 +39,7 @@ namespace Menu.Controllers
                 return NotFound();
             }
 
-            var sectionDto = _mapper.Map<SectionDto>(section);
+            var sectionDto = _mapper.Map<SectionReadDto>(section);
             return Ok(sectionDto);
         }
 
@@ -52,17 +52,15 @@ namespace Menu.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSection(int id, Section sectionUpdateDto)
-        {
-            var section = await _sectionRepository.GetSectionById(id);
-            if (section == null)
+        public async Task<IActionResult> UpdateSection( [FromForm] SectionUpdateDto sectionUpdateDto)
+        { 
+            var (success, message) = await _sectionRepository.UpdateSection(sectionUpdateDto);
+            if (!success)
             {
-                return NotFound(section);
+                return NotFound(message);
             }
 
-            _mapper.Map(sectionUpdateDto, section);
-            await _sectionRepository.UpdateSection(section);
-            return Ok(section);
+            return Ok(message);
         }
 
         [HttpDelete("{id}")]

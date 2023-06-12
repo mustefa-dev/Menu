@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,7 +32,8 @@ namespace Menu.Controllers
         }
 
         [HttpGet("section/{sectionName}")]
-        public async Task<ActionResult<IEnumerable<DrinkDto>>> GetDrinksBySection(string sectionName)
+        [SuppressMessage("ReSharper.DPA", "DPA0006: Large number of DB commands", MessageId = "count: 382")]
+        public async Task<ActionResult<IEnumerable<DrinkReadDto>>> GetDrinksBySection(string sectionName)
         {
             var drinks = await _drinkRepository.GetDrinksBySection(sectionName);
             if (drinks == null)
@@ -43,7 +45,7 @@ namespace Menu.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DrinkDto>>> GetDrinks()
+        public async Task<ActionResult<IEnumerable<DrinkReadDto>>> GetDrinks()
         {
             var drinks = await _drinkRepository.GetDrinks();
             if (drinks == null)
@@ -55,7 +57,7 @@ namespace Menu.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<DrinkDto>> GetDrinkById(int id)
+        public async Task<ActionResult<DrinkReadDto>> GetDrinkById(int id)
         {
             var drink = await _drinkRepository.GetDrinkById(id);
             if (drink == null)

@@ -8,6 +8,8 @@ using Item.Data;
 using Menu.Data;
 using Menu.Services.Category;
 using Menu.Services.Drink;
+using Menu.Services.Food;
+using Menu.Services.FoodSection;
 using Menu.Services.Menu;
 using Menu.Services.Section;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +58,8 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ISectionRepository, SectionRepository>();
 builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
+builder.Services.AddScoped<IFoodRepository, FoodRepository>();
+builder.Services.AddScoped<IFoodSectionRepository, FoodSectionRepository>();
 
 
 

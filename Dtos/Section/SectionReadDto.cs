@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Menu.Dtos.Section;
 
-public class SectionDto
+public class SectionReadDto
 {
     public int Id { get; set; }
     [Required] // Add this attribute to enforce the Name property to be provided
