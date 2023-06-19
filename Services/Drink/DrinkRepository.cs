@@ -115,21 +115,21 @@ namespace Menu.Services.Drink
 
         private async Task<string> SavePhoto(IFormFile photo, IWebHostEnvironment webHostEnvironment)
         {
-            var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
+                var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
 
-            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await photo.CopyToAsync(fileStream);
-            }
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(fileStream);
+                }
 
-            return Path.Combine("uploads", uniqueFileName);
+                return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

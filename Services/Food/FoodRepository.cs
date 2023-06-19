@@ -111,16 +111,21 @@ namespace Menu.Services.Food
 
         private async Task<string> SavePhoto(IFormFile photo, IWebHostEnvironment webHostEnvironment)
         {
-            string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads");
-            string uniqueFileName = Guid.NewGuid().ToString() + "_" + photo.FileName;
-            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 await photo.CopyToAsync(fileStream);
             }
 
-            return uniqueFileName;
+            return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

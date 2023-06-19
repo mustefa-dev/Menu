@@ -1,10 +1,7 @@
 using AutoMapper;
 using Menu.Data;
-using Menu.Dtos.FoodSection;
 using Menu.Dtos.Section;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;    
 
 namespace Menu.Services.Section
 {

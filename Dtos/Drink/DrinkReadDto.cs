@@ -1,4 +1,4 @@
-namespace Menu.Dtos.Drink{
+    namespace Menu.Dtos.Drink{
     namespace Menu.Dtos.Drink{
         public class DrinkReadDto{
             public int Id { get; set; }
