@@ -4,9 +4,8 @@ namespace Menu.Dtos.Section;
 
 public class SectionReadDto
 {
-    public int Id { get; set; }
-    [Required] // Add this attribute to enforce the Name property to be provided
+    [Required] 
     public string Name { get; set; }
-    public int SectionId { get; set; } // Add the SectionId property
+    public string Photo { get; set; }
 
 }

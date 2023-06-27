@@ -1,7 +1,7 @@
 using AutoMapper;
 using Menu.Data;
 using Menu.Dtos.Section;
-using Microsoft.EntityFrameworkCore;    
+using Microsoft.EntityFrameworkCore;
 
 namespace Menu.Services.Section
 {
@@ -22,9 +22,9 @@ namespace Menu.Services.Section
             return _mapper.Map<List<SectionReadDto>>(sections);
         }
 
-        public async Task<SectionReadDto> GetSectionById(int id)
+        public async Task<SectionReadDto> GetSectionByName(string name)
         {
-            var section = await _context.Sections.FindAsync(id);
+            var section = await _context.Sections.FirstOrDefaultAsync(s => s.Name == name);
             if (section == null)
             {
                 return null;
@@ -35,22 +35,45 @@ namespace Menu.Services.Section
 
         public async Task<(bool success, string message)> AddSection(Models.Section sectionCreateDto)
         {
-            var section = _mapper.Map<Models.Section>(sectionCreateDto);
-
             bool sectionExists = await _context.Sections.AnyAsync(s => s.Name == sectionCreateDto.Name);
             if (sectionExists)
             {
                 return (false, "Section name already exists.");
             }
 
+            var section = _mapper.Map<Models.Section>(sectionCreateDto);
+
             await _context.Sections.AddAsync(section);
             await _context.SaveChangesAsync();
             return (true, "Section added successfully.");
         }
 
-        public async Task<(bool success, string message)> UpdateSection(SectionUpdateDto sectionUpdateDto)
+        public async Task<(bool success, string message)> AddSection(SectionCreateDto sectionCreateDto,
+            IWebHostEnvironment webHostEnvironment)
         {
-            var section = await _context.Sections.FindAsync(sectionUpdateDto.Id);
+            bool sectionExists = await _context.Sections.AnyAsync(s => s.Name == sectionCreateDto.Name);
+            if (sectionExists)
+            {
+                return (false, "Section name already exists.");
+            }
+
+            var section = _mapper.Map<Models.Section>(sectionCreateDto);
+
+            if (sectionCreateDto.Photo != null)
+            {
+                section.Photo = await SavePhoto(sectionCreateDto.Photo, webHostEnvironment);
+            }
+
+            await _context.Sections.AddAsync(section);
+            await _context.SaveChangesAsync();
+
+            return (true, "Section added successfully.");
+        }
+
+        public async Task<(bool success, string message)> UpdateSection(SectionUpdateDto sectionUpdateDto,
+            IWebHostEnvironment webHostEnvironment)
+        {
+            var section = await _context.Sections.FirstOrDefaultAsync(s => s.Name == sectionUpdateDto.Name);
             if (section == null)
             {
                 return (false, "Section not found.");
@@ -64,13 +87,18 @@ namespace Menu.Services.Section
 
             _mapper.Map(sectionUpdateDto, section);
 
+            if (sectionUpdateDto.Photo != null)
+            {
+                section.Photo = await SavePhoto(sectionUpdateDto.Photo, webHostEnvironment);
+            }
+
             await _context.SaveChangesAsync();
             return (true, "Section updated successfully.");
         }
 
-        public async Task<(bool success, string message)> DeleteSection(int id)
+        public async Task<(bool success, string message)> DeleteSection(string name)
         {
-            var section = await _context.Sections.FindAsync(id);
+            var section = await _context.Sections.FirstOrDefaultAsync(s => s.Name == name);
             if (section == null)
             {
                 return (false, "Section not found.");
@@ -79,6 +107,29 @@ namespace Menu.Services.Section
             _context.Sections.Remove(section);
             await _context.SaveChangesAsync();
             return (true, "Section deleted successfully.");
+        }
+
+
+        private async Task<string> SavePhoto(IFormFile photo, IWebHostEnvironment webHostEnvironment) {
+            var uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder)) {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Resize the photo to a 4:3 aspect ratio
+            using (var image = SixLabors.ImageSharp.Image.Load(photo.OpenReadStream())) {
+                int targetWidth = image.Width;
+                int targetHeight = (int)(targetWidth * 0.75); // 4:3 aspect ratio
+
+                image.Mutate(x => x.Resize(targetWidth, targetHeight));
+
+                image.Save(filePath);
+            }
+
+            return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

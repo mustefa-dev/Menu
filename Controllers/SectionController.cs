@@ -15,11 +15,13 @@ namespace Menu.Controllers
     {
         private readonly ISectionRepository _sectionRepository;
         private readonly IMapper _mapper;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public SectionController(ISectionRepository sectionRepository, IMapper mapper)
+        public SectionController(ISectionRepository sectionRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _sectionRepository = sectionRepository;
             _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -27,13 +29,13 @@ namespace Menu.Controllers
         {
             var sections = await _sectionRepository.GetSections();
             var sectionDtos = _mapper.Map<List<SectionReadDto>>(sections);
-            return Ok(sections);
+            return Ok(sectionDtos);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<SectionReadDto>> GetSection(int id)
+        [HttpGet("{name}")]
+        public async Task<ActionResult<SectionReadDto>> GetSection(string name)
         {
-            var section = await _sectionRepository.GetSectionById(id);
+            var section = await _sectionRepository.GetSectionByName(name);
             if (section == null)
             {
                 return NotFound();
@@ -44,17 +46,21 @@ namespace Menu.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddSection(Section sectionCreateDto)
+        public async Task<IActionResult> AddSection([FromForm] SectionCreateDto sectionDto)
         {
-            var section = _mapper.Map<Section>(sectionCreateDto);
-            await _sectionRepository.AddSection(section);
-            return Ok(section);
+            var (success, message) = await _sectionRepository.AddSection(sectionDto, _webHostEnvironment);
+            if (!success)
+            {
+                return BadRequest(message);
+            }
+
+            return Ok(message);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSection( [FromForm] SectionUpdateDto sectionUpdateDto)
-        { 
-            var (success, message) = await _sectionRepository.UpdateSection(sectionUpdateDto);
+        [HttpPut]
+        public async Task<IActionResult> UpdateSection([FromForm] SectionUpdateDto sectionUpdateDto)
+        {
+            var (success, message) = await _sectionRepository.UpdateSection(sectionUpdateDto, _webHostEnvironment);
             if (!success)
             {
                 return NotFound(message);
@@ -63,16 +69,16 @@ namespace Menu.Controllers
             return Ok(message);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSection(int id)
+        [HttpDelete("{name}")]
+        public async Task<IActionResult> DeleteSection(string name)
         {
-            var section = await _sectionRepository.GetSectionById(id);
+            var section = await _sectionRepository.GetSectionByName(name);
             if (section == null)
             {
                 return NotFound(section);
             }
-        
-            await _sectionRepository.DeleteSection(id);
+
+            await _sectionRepository.DeleteSection(name);
             return Ok(section);
         }
     }
