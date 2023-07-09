@@ -1,85 +1,105 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
-using Menu.Data;
+using Menu.Data.Repositories;
 using Menu.Dtos.Section;
-using Menu.Models;
-using Menu.Services.Section;
+using Menu.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Menu.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/sections")]
     public class SectionController : ControllerBase
     {
         private readonly ISectionRepository _sectionRepository;
         private readonly IMapper _mapper;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public SectionController(ISectionRepository sectionRepository, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public SectionController(ISectionRepository sectionRepository, IMapper mapper)
         {
             _sectionRepository = sectionRepository;
             _mapper = mapper;
-            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<SectionReadDto>>> GetSections()
         {
-            var sections = await _sectionRepository.GetSections();
-            var sectionDtos = _mapper.Map<List<SectionReadDto>>(sections);
-            return Ok(sectionDtos);
+            var sections = await _sectionRepository.GetSectionsAsync();
+            return Ok(_mapper.Map<List<SectionReadDto>>(sections));
         }
 
-        [HttpGet("{name}")]
-        public async Task<ActionResult<SectionReadDto>> GetSection(string name)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<SectionReadDto>> GetSection(Guid id)
         {
-            var section = await _sectionRepository.GetSectionByName(name);
+            var section = await _sectionRepository.GetSectionAsync(id);
             if (section == null)
             {
                 return NotFound();
             }
+            return Ok(_mapper.Map<SectionReadDto>(section));
+        }
 
-            var sectionDto = _mapper.Map<SectionReadDto>(section);
-            return Ok(sectionDto);
+        [HttpGet("categories/{categoryId}")]
+        public async Task<ActionResult<List<SectionReadDto>>> GetSectionsByCategoryId(Guid categoryId)
+        {
+            var sections = await _sectionRepository.GetSectionsByCategoryIdAsync(categoryId);
+            return Ok(_mapper.Map<List<SectionReadDto>>(sections));
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddSection([FromForm] SectionCreateDto sectionDto)
+        public async Task<ActionResult<SectionReadDto>> CreateSection(SectionCreateDto sectionDto)
         {
-            var (success, message) = await _sectionRepository.AddSection(sectionDto, _webHostEnvironment);
-            if (!success)
-            {
-                return BadRequest(message);
-            }
-
-            return Ok(message);
+            var section = _mapper.Map<Section>(sectionDto);
+            var createdSection = await _sectionRepository.CreateSectionAsync(section);
+            return CreatedAtAction(nameof(GetSection), new { id = createdSection.Id }, _mapper.Map<SectionReadDto>(createdSection));
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateSection([FromForm] SectionUpdateDto sectionUpdateDto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateSection(Guid id, SectionUpdateDto sectionDto)
         {
-            var (success, message) = await _sectionRepository.UpdateSection(sectionUpdateDto, _webHostEnvironment);
-            if (!success)
-            {
-                return NotFound(message);
-            }
-
-            return Ok(message);
-        }
-
-        [HttpDelete("{name}")]
-        public async Task<IActionResult> DeleteSection(string name)
-        {
-            var section = await _sectionRepository.GetSectionByName(name);
+            var section = await _sectionRepository.GetSectionAsync(id);
             if (section == null)
             {
-                return NotFound(section);
+                return NotFound();
             }
+            _mapper.Map(sectionDto, section);
+            await _sectionRepository.UpdateSectionAsync(id, section);
+            return NoContent();
+        }
 
-            await _sectionRepository.DeleteSection(name);
-            return Ok(section);
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSection(Guid id)
+        {
+            var section = await _sectionRepository.GetSectionAsync(id);
+            if (section == null)
+            {
+                return NotFound();
+            }
+            await _sectionRepository.DeleteSectionAsync(id);
+            return NoContent();
+        }
+
+        [HttpDelete("categories/{categoryId}")]
+        public async Task<IActionResult> DeleteSectionsByCategoryId(Guid categoryId)
+        {
+            var result = await _sectionRepository.DeleteSectionsByCategoryIdAsync(categoryId);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("items/{sectionId}")]
+        public async Task<IActionResult> DeleteItemsBySectionId(Guid sectionId)
+        {
+            var result = await _sectionRepository.DeleteItemsBySectionIdAsync(sectionId);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

@@ -1,9 +1,8 @@
-namespace Menu.Models;
-
-public class Section{
-    public int Id { get; set; }
+public class Section
+{
+    public Guid? Id { get; set; }
     public string Name { get; set; }
-    public string Photo { get; set; }
-
-
+    public Guid CategoryId { get; set; }
+    public Category Category { get; set; }
+    public List<Item> Items { get; set; }
 }

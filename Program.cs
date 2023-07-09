@@ -4,14 +4,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Menu.Services;
 using Auth.Data;
-using Item.Data;
 using Menu.Data;
-using Menu.Services.Category;
-using Menu.Services.Drink;
-using Menu.Services.Food;
-using Menu.Services.FoodSection;
-using Menu.Services.Menu;
-using Menu.Services.Section;
+using Menu.Data.Repositories;
+using Menu.Services.Menu.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,10 +52,6 @@ builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ISectionRepository, SectionRepository>();
-builder.Services.AddScoped<IDrinkRepository, DrinkRepository>();
-builder.Services.AddScoped<IFoodRepository, FoodRepository>();
-builder.Services.AddScoped<IFoodSectionRepository, FoodSectionRepository>();
-
 
 
 

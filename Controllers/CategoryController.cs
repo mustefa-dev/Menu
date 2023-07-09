@@ -1,7 +1,10 @@
-using Item.Data;
-using Menu.Dtos;
-using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
+using Menu.Data.Repositories;
 using Menu.Dtos.Category;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Menu.Controllers
 {
@@ -10,54 +13,85 @@ namespace Menu.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IMapper _mapper;
 
-        public CategoryController(ICategoryRepository categoryRepository)
+        public CategoryController(ICategoryRepository categoryRepository, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryReadDto>>> GetCategories()
+        public async Task<ActionResult<List<CategoryReadDto>>> GetCategories()
         {
-            var categories = await _categoryRepository.GetCategories();
-            return Ok(categories);
+            var categories = await _categoryRepository.GetCategoriesAsync();
+            return Ok(_mapper.Map<List<CategoryReadDto>>(categories));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CategoryReadDto>> GetCategory(int id)
+        public async Task<ActionResult<CategoryReadDto>> GetCategory(Guid id)
         {
-            var category = await _categoryRepository.GetCategory(id);
+            var category = await _categoryRepository.GetCategoryAsync(id);
             if (category == null)
+            {
                 return NotFound();
-
-            return Ok(category);
+            }
+            return Ok(_mapper.Map<CategoryReadDto>(category));
         }
 
         [HttpPost]
-        public async Task<ActionResult<CategoryReadDto>> AddCategory(CategoryCreateDto categoryDto)
+        public async Task<ActionResult<CategoryReadDto>> CreateCategory(CategoryCreateDto categoryDto)
         {
-            var category = await _categoryRepository.AddCategory(categoryDto);
-            return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
+            var category = _mapper.Map<Category>(categoryDto);
+            var createdCategory = await _categoryRepository.CreateCategoryAsync(category);
+            return CreatedAtAction(nameof(GetCategory), new { id = createdCategory.Id }, _mapper.Map<CategoryReadDto>(createdCategory));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateCategory(int id, CategoryUpdateDto categoryDto)
+        public async Task<IActionResult> UpdateCategory(Guid id, CategoryUpdateDto categoryDto)
         {
-            var result = await _categoryRepository.UpdateCategory(id, categoryDto);
-            if (!result)
+            var category = await _categoryRepository.GetCategoryAsync(id);
+            if (category == null)
+            {
                 return NotFound();
-
+            }
+            _mapper.Map(categoryDto, category);
+            await _categoryRepository.UpdateCategoryAsync(id, category);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory(Guid id)
         {
-            var result = await _categoryRepository.DeleteCategory(id);
-            if (!result)
+            var category = await _categoryRepository.GetCategoryAsync(id);
+            if (category == null)
+            {
                 return NotFound();
-
+            }
+            await _categoryRepository.DeleteCategoryAsync(id);
             return NoContent();
         }
-    }   
+
+        [HttpDelete("{categoryId}/sections")]
+        public async Task<IActionResult> DeleteSectionsByCategoryId(Guid categoryId)
+        {
+            var result = await _categoryRepository.DeleteSectionsByCategoryIdAsync(categoryId);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("sections/{sectionId}/items")]
+        public async Task<IActionResult> DeleteItemsBySectionId(Guid sectionId)
+        {
+            var result = await _categoryRepository.DeleteItemsBySectionIdAsync(sectionId);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+    }
 }

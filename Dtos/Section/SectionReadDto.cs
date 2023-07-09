@@ -4,8 +4,8 @@ namespace Menu.Dtos.Section;
 
 public class SectionReadDto
 {
-    [Required] 
+    public Guid? Id { get; set; }
     public string Name { get; set; }
-    public string Photo { get; set; }
-
+    public List<ItemReadDto> Items { get; set; }
 }
+

@@ -1,111 +1,90 @@
-using Item.Data;
+using AutoMapper;
+using Menu.Data.Repositories;
 using Menu.Dtos;
-using Menu.Services.Menu;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Menu.Controllers
 {
     [ApiController]
     [Route("api/items")]
-    public class ItemsController : ControllerBase
+    public class ItemController : ControllerBase
     {
-        private readonly IItemRepository _repository;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IItemRepository _itemRepository;
+        private readonly IMapper _mapper;
 
-        public ItemsController(IItemRepository repository, IWebHostEnvironment webHostEnvironment)
+        public ItemController(IItemRepository itemRepository, IMapper mapper)
         {
-            _repository = repository;
-            _webHostEnvironment = webHostEnvironment;
-        }
-        [HttpGet("itemsByCategory/{categoryName}")]
-        public async Task<ActionResult<IEnumerable<ItemReadDto>>> GetItemsByCategory(string categoryName)
-        {
-            var items = await _repository.GetItemsByCategoryName(categoryName);
-            return Ok(items);
-        }
-        [HttpPost]
-        public async Task<IActionResult> AddItem([FromForm] ItemCreateDto itemDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var createdItem = await _repository.AddItem(itemDto);
-
-            return CreatedAtRoute(nameof(GetItem), new { id = createdItem.Id }, createdItem);
+            _itemRepository = itemRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetItems()
+        public async Task<ActionResult<List<ItemReadDto>>> GetItems()
         {
-            var items = await _repository.GetItems();
-            return Ok(items);
+            var items = await _itemRepository.GetItemsAsync();
+            return Ok(_mapper.Map<List<ItemReadDto>>(items));
         }
 
-        [HttpGet("{id}", Name = nameof(GetItem))]
-        public async Task<IActionResult> GetItem(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ItemReadDto>> GetItem(Guid id)
         {
-            var item = await _repository.GetItem(id);
-
+            var item = await _itemRepository.GetItemAsync(id);
             if (item == null)
             {
                 return NotFound();
             }
+            return Ok(_mapper.Map<ItemReadDto>(item));
+        }
 
-            return Ok(item);
+        [HttpGet("sections/{sectionId}")]
+        public async Task<ActionResult<List<ItemReadDto>>> GetItemsBySectionId(Guid sectionId)
+        {
+            var items = await _itemRepository.GetItemsBySectionIdAsync(sectionId);
+            return Ok(_mapper.Map<List<ItemReadDto>>(items));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ItemReadDto>> CreateItem(ItemCreateDto itemDto)
+        {
+            var item = _mapper.Map<Item>(itemDto);
+            var createdItem = await _itemRepository.CreateItemAsync(item);
+            return CreatedAtAction(nameof(GetItem), new { id = createdItem.Id }, _mapper.Map<ItemReadDto>(createdItem));
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateItem(int id, [FromForm] ItemUpdateDto itemDto)
+        public async Task<IActionResult> UpdateItem(Guid id, ItemUpdateDto itemDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _repository.UpdateItem(id, itemDto);
-
-            if (!result)
+            var item = await _itemRepository.GetItemAsync(id);
+            if (item == null)
             {
                 return NotFound();
             }
-
+            _mapper.Map(itemDto, item);
+            await _itemRepository.UpdateItemAsync(id, item);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteItem(int id)
+        public async Task<IActionResult> DeleteItem(Guid id)
         {
-            var result = await _repository.DeleteItem(id);
+            var item = await _itemRepository.GetItemAsync(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+            await _itemRepository.DeleteItemAsync(id);
+            return NoContent();
+        }
 
+        [HttpDelete("categories/{categoryId}")]
+        public async Task<IActionResult> DeleteItemsByCategoryId(Guid categoryId)
+        {
+            var result = await _itemRepository.DeleteItemsByCategoryIdAsync(categoryId);
             if (!result)
             {
                 return NotFound();
             }
-
             return NoContent();
-        }
-
-        private async Task<string> SavePhoto(IFormFile photo)
-        {
-            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
-
-            var uniqueFileName = $"{Guid.NewGuid()}_{photo.FileName}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await photo.CopyToAsync(fileStream);
-            }
-
-            return Path.Combine("uploads", uniqueFileName);
         }
     }
 }

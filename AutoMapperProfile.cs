@@ -1,28 +1,25 @@
 using AutoMapper;
+using Menu.Dtos;
 using Menu.Dtos.Category;
-using Menu.Dtos.Drink;
-using Menu.Dtos.Drink.Menu.Dtos.Drink;
-using Menu.Dtos.Food;
-using Menu.Dtos.FoodSection;
 using Menu.Dtos.Section;
-using Menu.Models;
 
 namespace Menu
 {
     public class MappingProfile : Profile
     {
-        public MappingProfile() {
-            CreateMap<FoodSectionReadDto, FoodSection>().ReverseMap();
-            CreateMap<FoodReadDto, Food>().ReverseMap();
-            CreateMap<DrinkCreateDto, Drink>().ReverseMap();
-            CreateMap<SectionReadDto, Section>().ReverseMap();
-            CreateMap<Food, FoodCreateDto>().ReverseMap();
-            CreateMap<Drink,DrinkReadDto>().ReverseMap();
-            CreateMap<Section, SectionCreateDto>().ReverseMap();
-            CreateMap<FoodSection, FoodSectionCreateDto>().ReverseMap();
+        public MappingProfile()
+        {
+            CreateMap<Category, CategoryReadDto>();
+            CreateMap<CategoryCreateDto, Category>();
+            CreateMap<CategoryUpdateDto, Category>();
 
+            CreateMap<Section, SectionReadDto>();
+            CreateMap<SectionCreateDto, Section>();
+            CreateMap<SectionUpdateDto, Section>();
 
-
+            CreateMap<Item, ItemReadDto>();
+            CreateMap<ItemCreateDto, Item>();
+            CreateMap<ItemUpdateDto, Item>();
         }
     }
 }

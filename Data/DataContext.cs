@@ -8,12 +8,9 @@
 
 
             public DbSet<User> User => Set<User>();
-            public DbSet<Models.Item> Items => Set<Menu.Models.Item>();
-            public DbSet<Category> Categories => Set<Category>();
-            public DbSet<Section> Sections => Set<Section>();
-            public DbSet<Drink> Drinks => Set<Drink>();
-            public DbSet<Food> Foods => Set<Food>();
-            public DbSet<FoodSection> FoodSections { get; set; }
+            public DbSet<Category> Categories { get; set; }
+            public DbSet<Section> Sections { get; set; }
+            public DbSet<Item> Items { get; set; }
 
         }
     }
