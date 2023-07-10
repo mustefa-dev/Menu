@@ -11,6 +11,7 @@
             public DbSet<Category> Categories { get; set; }
             public DbSet<Section> Sections { get; set; }
             public DbSet<Item> Items { get; set; }
+            public DbSet<Order> Orders { get; set; }
 
         }
     }

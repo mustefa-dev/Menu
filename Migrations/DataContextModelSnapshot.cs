@@ -60,6 +60,21 @@ namespace Menu.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("ItemOrder", b =>
+                {
+                    b.Property<Guid>("ItemsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrdersId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ItemsId", "OrdersId");
+
+                    b.HasIndex("OrdersId");
+
+                    b.ToTable("ItemOrder");
+                });
+
             modelBuilder.Entity("Menu.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -83,6 +98,30 @@ namespace Menu.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("User");
+                });
+
+            modelBuilder.Entity("Order", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TableNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("SectionId");
+
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Section", b =>
@@ -116,6 +155,36 @@ namespace Menu.Migrations
                     b.Navigation("Section");
                 });
 
+            modelBuilder.Entity("ItemOrder", b =>
+                {
+                    b.HasOne("Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrdersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Order", b =>
+                {
+                    b.HasOne("Category", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Section", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Section", b =>
                 {
                     b.HasOne("Category", "Category")
@@ -129,12 +198,16 @@ namespace Menu.Migrations
 
             modelBuilder.Entity("Category", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("Sections");
                 });
 
             modelBuilder.Entity("Section", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

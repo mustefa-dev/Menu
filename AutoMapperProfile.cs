@@ -1,6 +1,7 @@
 using AutoMapper;
 using Menu.Dtos;
 using Menu.Dtos.Category;
+using Menu.Dtos.Order;
 using Menu.Dtos.Section;
 
 namespace Menu
@@ -20,6 +21,12 @@ namespace Menu
             CreateMap<Item, ItemReadDto>();
             CreateMap<ItemCreateDto, Item>();
             CreateMap<ItemUpdateDto, Item>();
+            
+            
+            CreateMap<Order, OrderCreateDto>();
+            CreateMap<OrderReadDto, Order>();
+            CreateMap<Order, OrderReadDto>();
+            CreateMap<OrderCreateDto, Order>();
         }
     }
 }

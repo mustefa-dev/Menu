@@ -5,4 +5,5 @@ public class Section
     public Guid CategoryId { get; set; }
     public Category Category { get; set; }
     public List<Item> Items { get; set; }
+    public List<Order> Orders { get; set; }
 }

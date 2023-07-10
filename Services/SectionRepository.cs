@@ -1,7 +1,6 @@
 using AutoMapper;
 using Menu.Data;
 using Menu.Dtos.Section;
-using Menu.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Menu.Services
@@ -30,17 +29,24 @@ namespace Menu.Services
             _mapper = mapper;
         }
 
+        public async Task<SectionReadDto> GetSectionAsync(Guid id)
+        {
+            var section = await _context.Sections
+                .Include(s => s.Items)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            return _mapper.Map<SectionReadDto>(section);
+        }
+
         public async Task<List<SectionReadDto>> GetSectionsAsync()
         {
-            var sections = await _context.Sections.ToListAsync();
+            var sections = await _context.Sections
+                .Include(s => s.Items)
+                .ToListAsync();
+            
             return _mapper.Map<List<SectionReadDto>>(sections);
         }
 
-        public async Task<SectionReadDto> GetSectionAsync(Guid id)
-        {
-            var section = await _context.Sections.FindAsync(id);
-            return _mapper.Map<SectionReadDto>(section);
-        }
 
         public async Task<List<SectionReadDto>> GetSectionsByCategoryIdAsync(Guid categoryId)
         {

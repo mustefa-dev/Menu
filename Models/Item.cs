@@ -4,5 +4,6 @@ public class Item
     public string Name { get; set; }
     public decimal Price { get; set; }
     public Guid SectionId { get; set; }
-    public Section? Section { get; set; }
+    public Section Section { get; set; }
+    public List<Order> Orders { get; set; }
 }
